@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Paas: your text and files on every device</title>
+  <meta name="description" content="Type on one device and it appears on your others. Send files between your phone and computer on any network. No account, no app.">
+  <meta name="theme-color" content="#E8EDF1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#10151F" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='9' width='19' height='19' rx='5' fill='%232448C8'/%3E%3Crect x='11' y='4' width='19' height='19' rx='5' fill='%23F2B632'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="logo" viewBox="0 0 32 32">
+      <rect x="2" y="9" width="19" height="19" rx="5" fill="var(--accent)"/>
+      <rect x="11" y="4" width="19" height="19" rx="5" fill="var(--marigold)"/>
+    </symbol>
+  </svg>
+
+  <div id="loading" class="loading" role="status">
+    <span class="mark"><svg><use href="#logo"/></svg>paas</span>
+    <p id="loadingText">Opening your space…</p>
+  </div>
+
+  <!-- Shown when this device isn't linked to a space yet -->
+  <main id="welcome" class="welcome" hidden>
+    <div class="welcome-inner">
+      <span class="mark"><svg><use href="#logo"/></svg>paas</span>
+      <h1>Type on one device. It’s already on the other.</h1>
+      <p class="lede">Share text and files between your phone and computer, on any network. No account, no app.</p>
+
+      <div id="networkOffer" class="offer" hidden>
+        <p>Your devices on this WiFi already have a space.</p>
+        <button type="button" class="btn primary" id="joinNetworkBtn">Join it</button>
+      </div>
+
+      <form id="codeForm" class="code-form" novalidate>
+        <label for="codeInput">Have a code from your other device?</label>
+        <div class="code-row">
+          <input id="codeInput" inputmode="numeric" autocomplete="one-time-code" maxlength="7"
+                 placeholder="000 000" aria-describedby="codeError" spellcheck="false">
+          <button type="submit" class="btn primary" id="codeBtn">Join</button>
+        </div>
+        <p id="codeError" class="error" role="alert"></p>
+      </form>
+
+      <div class="or"><span>or</span></div>
+      <button type="button" class="btn wide" id="createBtn">Start a new space</button>
+      <p class="fineprint">Start a space on your first device, then tap “Add device” to bring in the rest.</p>
+    </div>
+  </main>
+
+  <!-- The app itself -->
+  <div id="app" class="app" hidden>
+    <header class="bar">
+      <span class="mark small"><svg><use href="#logo"/></svg>paas</span>
+      <p class="live" id="live" data-state="connecting"><span class="dot"></span><span id="liveText">Connecting…</span></p>
+      <button type="button" class="btn primary" id="addDeviceBtn">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Add device
+      </button>
+    </header>
+
+    <main class="layout">
+      <section class="pad-wrap" aria-label="Shared text">
+        <div class="pad-tools">
+          <span id="saveState" class="save-state">Saved</span>
+          <div class="tool-group">
+            <button type="button" class="btn small ghost" id="copyBtn">Copy</button>
+            <button type="button" class="btn small ghost" id="clearBtn">Clear</button>
+          </div>
+        </div>
+        <textarea id="pad" dir="auto" spellcheck="false" aria-label="Shared text"
+                  placeholder="Type or paste here. It shows up on your other devices as you type."></textarea>
+      </section>
+
+      <aside class="side">
+        <section class="panel" aria-labelledby="filesTitle">
+          <div class="panel-head">
+            <h2 id="filesTitle">Files</h2>
+            <label class="btn small">
+              Upload
+              <input type="file" id="fileInput" multiple hidden>
+            </label>
+          </div>
+          <p class="hint" id="filesHint">Drop files anywhere on the page. They delete themselves after 7 days.</p>
+          <ul class="list" id="fileList"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="devicesTitle">
+          <h2 id="devicesTitle">Devices</h2>
+          <ul class="list" id="deviceList"></ul>
+          <label class="switch">
+            <input type="checkbox" id="netJoin">
+            <span>Devices on the same WiFi can join without a code</span>
+          </label>
+          <button type="button" class="link danger" id="leaveBtn">Remove this device from the space</button>
+        </section>
+      </aside>
+    </main>
+
+    <div id="dropzone" class="dropzone" hidden><p>Drop to upload</p></div>
+  </div>
+
+  <dialog id="pairDialog" aria-labelledby="pairTitle">
+    <div class="pair">
+      <div class="pair-head">
+        <h2 id="pairTitle">Add a device</h2>
+        <button type="button" class="icon-btn" id="pairClose" aria-label="Close">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div id="pairBody" aria-live="polite"></div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
